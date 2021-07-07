@@ -6,10 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Identity
 {
@@ -36,8 +33,9 @@ namespace Identity
         //used for auth on this microservice
         public static void ConfigureJwt(this IServiceCollection services, IConfiguration configuration)
         {
-            var jwtSettings = configuration.GetSection("JwtSettings");
             var secretKey = Environment.GetEnvironmentVariable("SECRET");
+            var validIssuer = configuration.GetValue<string>("JwtSettings:ValidIssuer");
+            var validAudience = configuration.GetValue<string>("JwtSettings:ValidAudience");
 
             services.AddAuthentication(opt =>
             {
@@ -53,8 +51,8 @@ namespace Identity
                     ValidateIssuerSigningKey = true,
                     ValidateLifetime = true,
 
-                    ValidIssuer = jwtSettings.GetSection("ValidIssuer").Value,
-                    ValidAudience = jwtSettings.GetSection("ValidAudience").Value,
+                    ValidIssuer = validIssuer,
+                    ValidAudience = validAudience,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
                 };
             });

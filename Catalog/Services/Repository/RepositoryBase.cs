@@ -2,10 +2,8 @@
 using Catalog.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 
 namespace Catalog.Services.Repository
 {
@@ -36,17 +34,17 @@ namespace Catalog.Services.Repository
                 return _catalogContext.Set<Entity>().Where(expression).AsNoTracking();
         }
 
-        public void Create(Entity entity)
+        public void CreateEntity(Entity entity)
         {
             _catalogContext.Add(entity);
         }
 
-        public void Delete(Entity entity)
+        public void DeleteEntity(Entity entity)
         {
             _catalogContext.Remove(entity);
         }
 
-        public void Update(Entity entity)
+        public void UpdateEntity(Entity entity)
         {
             _catalogContext.Update(entity);
         }

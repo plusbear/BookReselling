@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace Catalog.Services.Repository
 {
@@ -10,6 +7,6 @@ namespace Catalog.Services.Repository
         IProductRepository Product { get; }
         ICategoryRepository Category { get; }
 
-        Task SaveAsync();
+        Task Save();
     }
 }

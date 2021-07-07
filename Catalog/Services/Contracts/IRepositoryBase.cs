@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 
 namespace Catalog.Services.Repository
 {
@@ -10,8 +8,8 @@ namespace Catalog.Services.Repository
     {
         IQueryable<Entity> FindAll(bool trackChanges);
         IQueryable<Entity> FindByCondition(Expression<Func<Entity, bool>> expression, bool trackChanges);
-        void Create(Entity entity);
-        void Update(Entity entity);
-        void Delete(Entity entity);
+        void CreateEntity(Entity entity);
+        void UpdateEntity(Entity entity);
+        void DeleteEntity(Entity entity);
     }
 }

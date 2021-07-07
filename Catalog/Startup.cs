@@ -1,10 +1,7 @@
 using Catalog.Helpers;
 using Catalog.Infrastructure;
-using Catalog.Services.Repository;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,7 +29,7 @@ namespace Catalog
 
             services.ConfigureAuthentication(Configuration);
             services.ConfigureRepositories();
-            services.ConfigureAmazonS3();
+            services.ConfigureAmazonS3(Configuration);
 
             services.AddControllers();
             services.AddSwaggerGen(c =>

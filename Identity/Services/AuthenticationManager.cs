@@ -15,20 +15,20 @@ namespace Identity.Services
 {
     public class AuthenticationManager : IAuthenticationManager
     {
+        private readonly UserManager<User> _userManager;
+        private readonly IConfiguration _configuration;
+        private User _user;
+
         public AuthenticationManager(UserManager<User> userManager, IConfiguration configuration)
         {
-            UserManager = userManager;
-            Configuration = configuration;
-        }
-
-        public UserManager<User> UserManager { get; set; }
-        public IConfiguration Configuration { get; set; }
-        private User _user { get; set; }
+            _userManager = userManager;
+            _configuration = configuration;
+        }        
 
         public async Task<bool> ValidateUser(UserForAuthenticationDto userForAuth)
         {
-            _user = await UserManager.FindByNameAsync(userForAuth.UserName);
-            return (_user != null && await UserManager.CheckPasswordAsync(_user, userForAuth.Password));
+            _user = await _userManager.FindByNameAsync(userForAuth.UserName);
+            return (_user != null && await _userManager.CheckPasswordAsync(_user, userForAuth.Password));
         }
 
         public async Task<string> CreateToken()
@@ -55,7 +55,7 @@ namespace Identity.Services
                 new Claim(ClaimTypes.Name, _user.UserName)
             };
 
-            var roles = await UserManager.GetRolesAsync(_user);
+            var roles = await _userManager.GetRolesAsync(_user);
             claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
             return claims;
@@ -63,13 +63,16 @@ namespace Identity.Services
 
         private JwtSecurityToken GenerateTokenOptions(SigningCredentials credentials, List<Claim> claims)
         {
-            var jwtSettings = Configuration.GetSection("JwtSettings");
+            var issuer = _configuration.GetValue<string>("JwtSettings:ValidIssuer");
+            var audience = _configuration.GetValue<string>("JwtSettings:ValidAudience");
+            var expires = _configuration.GetValue<string>("JwtSettings:expires");
+
             var tokenOptions = new JwtSecurityToken
              (
-             issuer: jwtSettings.GetSection("ValidIssuer").Value,
-             audience: jwtSettings.GetSection("ValidAudience").Value,
+             issuer: issuer,
+             audience: audience,
              claims: claims,
-             expires: DateTime.Now.AddMinutes(Convert.ToDouble(jwtSettings.GetSection("expires").Value)),
+             expires: DateTime.Now.AddMinutes(Convert.ToDouble(expires)),
              signingCredentials: credentials
              );
 

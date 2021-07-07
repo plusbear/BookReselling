@@ -2,10 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Gateway
 {
@@ -15,9 +12,8 @@ namespace Gateway
         {
             var authenticationProviderKey = "MyAuthKey";
 
-            var jwtConfig = config.GetSection("JwtSettigns");
-            var issuer = jwtConfig.GetSection("ValidIssuer").Value;
-            var audience = jwtConfig.GetSection("ValidAudience").Value;
+            var issuer = config.GetValue<string>("JwtSettings:ValidIssuer");
+            var audience = config.GetValue<string>("JwtSettings:ValidAudience");
 
             services.AddCors(opt =>
             {

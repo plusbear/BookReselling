@@ -1,6 +1,5 @@
 ﻿using Amazon.S3;
 using Amazon.S3.Model;
-using Amazon.S3.Transfer;
 using Catalog.Infrastructure;
 using Catalog.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -9,21 +8,21 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Catalog.Services.Repository
 {
     public class ImageRepository : IImageRepository
     {
+        private readonly IAmazonS3 _S3;
+        private readonly CatalogContext _catalogContext;
+
         public ImageRepository([FromServices] CatalogContext catalogContext, [FromServices] IAmazonS3 s3)
         {
             _S3 = s3;
             _catalogContext = catalogContext;
         }
 
-        private IAmazonS3 _S3 { get; set; }
-        private CatalogContext _catalogContext { get; set; }
         public string Bucket { get; set; } = "mybucket";
         public string Prefix { get; set; } = "product-";
 
@@ -39,39 +38,12 @@ namespace Catalog.Services.Repository
             Bucket = bucket;
         }
 
-        public async Task<List<string>> GetImagesAsync(int productId)
+        public async Task<List<string>> GetAll(int productId)
         {
-            //returns images as links to S3 storage
             return await _catalogContext.Images.Where(i => i.ProductId == productId).Select(i => i.ImageRef).ToListAsync();
-
-            //returns images as base64 formatted strings
-
-            /*            if (!await _S3.DoesS3BucketExistAsync(Bucket))
-                            return new List<string>();
-
-                        var base64Images = new List<string>();
-
-                        var items = await _S3.ListObjectsAsync(Bucket, $"product-{productId}");            
-                        foreach (var item in items.S3Objects)
-                        {
-                            var request = new GetObjectRequest
-                            {
-                                BucketName = Bucket,
-                                Key = item.Key
-                            };
-                            var image = await _S3.GetObjectAsync(request);
-
-                            var memStream = new MemoryStream();
-                            image.ResponseStream.CopyTo(memStream);
-
-                            var content = Convert.ToBase64String(memStream.ToArray());
-                            base64Images.Add(content);
-                        }
-
-                        return base64Images;*/
         }
 
-        public async Task AddImagesAsync(int productId, List<string> b64Images)
+        public async Task Create(int productId, List<string> b64Images)
         {
             if (!await _S3.DoesS3BucketExistAsync(Bucket))
                 await CreateBucketAsync(Bucket);
@@ -114,13 +86,13 @@ namespace Catalog.Services.Repository
             }
         }
 
-        public async Task DeleteImagesAsync(int productId)
+        public async Task Delete(int productId)
         {
             if (!await _S3.DoesS3BucketExistAsync(Bucket))
                 return;
 
             var productImages = _catalogContext.Images.Where(i => i.ProductId == productId);
-            if (productImages.Count() == 0)
+            if (!productImages.Any())
                 return;
 
             foreach (var image in productImages)
@@ -138,7 +110,7 @@ namespace Catalog.Services.Repository
             await _catalogContext.SaveChangesAsync();
         }
 
-        public async Task DeleteImagesAsync(int productId, List<string> imagesNames)
+        public async Task DeleteByName(int productId, List<string> imagesNames)
         {
             if (!await _S3.DoesS3BucketExistAsync(Bucket))
                 return;
@@ -162,10 +134,10 @@ namespace Catalog.Services.Repository
             await _catalogContext.SaveChangesAsync();
         }
 
-        public async Task UpdateImagesAsync(int productId, List<string> b64Images)
+        public async Task Update(int productId, List<string> b64Images)
         {
-            await DeleteImagesAsync(productId);
-            await AddImagesAsync(productId, b64Images);
+            await Delete(productId);
+            await Create(productId, b64Images);
         }
     }
 }

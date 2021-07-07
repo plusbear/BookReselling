@@ -1,28 +1,23 @@
-﻿using Amazon.S3;
-using AutoMapper;
+﻿using AutoMapper;
 using Catalog.Infrastructure;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Catalog.Services.Repository
 {
     public class RepositoryManager : IRepositoryManager
     {
+        private readonly CatalogContext _catalogContext;
+        private readonly IMapper _autoMapper;
+        private IProductRepository _productRepository;
+        private ICategoryRepository _categoryRepository;
+        private IImageRepository _imageRepository;
+
         public RepositoryManager(CatalogContext catalogContext, IMapper autoMapper, IImageRepository imageRepository)
         {
             _catalogContext = catalogContext;
             _autoMapper = autoMapper;
             _imageRepository = imageRepository;
         }
-
-        private CatalogContext _catalogContext;
-        private IMapper _autoMapper;
-        private IImageRepository _imageRepository;
-
-        private IProductRepository _productRepository;
-        private ICategoryRepository _categoryRepository;
 
         public IProductRepository Product
         {
@@ -44,7 +39,7 @@ namespace Catalog.Services.Repository
             }
         }
 
-        public async Task SaveAsync()
+        public async Task Save()
         {
             await _catalogContext.SaveChangesAsync();
         }

@@ -6,10 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Catalog
 {
@@ -17,9 +14,9 @@ namespace Catalog
     {
         public static IServiceCollection ConfigureAuthentication(this IServiceCollection services, IConfiguration config)
         {
-            var jwtconfig = config.GetSection("JwtSettings");
-            var issuer = jwtconfig.GetSection("ValidIssuer").Value;
-            var audience = jwtconfig.GetSection("ValidAudience").Value;
+            var authKey = "MyAuthKey";
+            var issuer = config.GetValue<string>("JwtSettings:ValidIssuer");
+            var audience = config.GetValue<string>("JwtSettings:ValidAudience");
 
             var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("SECRET")));
             var tokenValidationParameters = new TokenValidationParameters
@@ -37,9 +34,9 @@ namespace Catalog
 
             services.AddAuthentication(o =>
             {
-                o.DefaultAuthenticateScheme = "MyAuthKey";
+                o.DefaultAuthenticateScheme = authKey;
             })
-            .AddJwtBearer("MyAuthKey", x =>
+            .AddJwtBearer(authKey, x =>
             {
                 x.RequireHttpsMetadata = false;
                 x.TokenValidationParameters = tokenValidationParameters;
@@ -48,7 +45,7 @@ namespace Catalog
             return services;
         }
 
-        public static IServiceCollection ConfigureAmazonS3(this IServiceCollection services)
+        public static IServiceCollection ConfigureAmazonS3(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddSingleton<IAmazonS3>(p =>
             {
@@ -59,7 +56,7 @@ namespace Catalog
                 if (p.GetService<IHostEnvironment>().IsDevelopment())
                 {
                     config.ForcePathStyle = true;
-                    config.ServiceURL = "http://localhost:4566";
+                    config.ServiceURL = configuration.GetValue<string>("Amazon:ServiceURL");
                 }
                 return new AmazonS3Client("keyid", "accesskey", config);
             });
